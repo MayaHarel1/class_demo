@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flask Discord Integration</title>
+    <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        h1, h2 {
+            text-align: center;
+            margin-top: 20px;
+            color: #444;
+        }
+        /* Container */
+        .container {
+            width: 80%;
+            max-width: 800px;
+            margin: 0 auto;
+            background: #ffffff;
+            border: 1px solid #ddd;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        /* Form */
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        input[type="text"] {
+            padding: 8px;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+            }
+        /* Messages */
+        #messages {
+            margin-top: 20px;
+        }
+        #messages ul {
+            list-style: none;
+            padding: 0;
+        }
+        #messages li {
+            background: #f1f1f1;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        #messages li strong {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>Send a Message to Discord</h1>
+    <!-- Container -->
+    <div class="container">
+        <!-- Form Section -->
+        <form action="/input_text" method="POST" id="messageForm">
+            <label for="text">Enter your message:</label>
+            <input type="text" id="text" name="text" placeholder="Type your message here..." required>
+            <button type="submit">Send Message</button>
+        </form>
+
+        <!-- Recent Messages Section -->
+        <h2>Recent Messages (Last 30 Minutes)</h2>
+        <div id="messages">
+            <!-- Messages will be loaded dynamically here -->
+        </div>
+    </div>
+    <!-- JavaScript -->
+    <script>
+        async function fetchMessages() {
+            try {
+                const response = await fetch('/get_messages');
+                const data = await response.json();
+                if (data.status === "success") {
+                    const messages = data.messages;
+                    let output = "<ul>";
+                    messages.forEach(msg => {
+                        output +=`
+                            <li>
+                                <strong>Message:</strong>${msg.content} <br>
+                                <strong>Time:</strong> ${new Date(msg.timestamp).toLocaleString()}
+                            </li>
+                        `;
+                    });
+                    output += "</ul>";
+                    document.getElementById('messages').innerHTML = output;
+                }
+                else {
+                    document.getElementById('messages').innerHTML = `<p>Error: ${data.message}</p>`;
+                }
+            }
+            catch (err) {
+                console.error("Error fetching messages:", err);
+                document.getElementById('messages').innerHTML = "<p>Error retrieving messages.</p>";
+            }
+        }
+        // Fetch messages every 10 seconds
+        fetchMessages();
+        setInterval(fetchMessages, 10000);
+    </script>
+</body>
+</html>
